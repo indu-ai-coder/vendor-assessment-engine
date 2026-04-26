@@ -121,12 +121,26 @@ function displayReport(data) {
             gaps = Object.values(gaps);
         }
         
-        // Count actual gaps (not full matches)
+        // Count different statuses
         const gapCount = gaps.filter(gap => {
             if (typeof gap === 'object' && gap !== null) {
-                return gap.status === 'GAP' || gap.status === 'PARTIAL_MATCH';
+                return gap.status === 'GAP';
             }
-            return true;
+            return false;
+        }).length;
+        
+        const partialCount = gaps.filter(gap => {
+            if (typeof gap === 'object' && gap !== null) {
+                return gap.status === 'PARTIAL_MATCH';
+            }
+            return false;
+        }).length;
+        
+        const compliantCount = gaps.filter(gap => {
+            if (typeof gap === 'object' && gap !== null) {
+                return gap.status === 'FULL_MATCH';
+            }
+            return false;
         }).length;
         
         const riskLevel = getRiskLevel(data.risk_score);
@@ -149,7 +163,7 @@ function displayReport(data) {
                     </div>
                     
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <h6 class="text-muted text-uppercase mb-3">Assessment Summary</h6>
                             <ul class="list-unstyled">
                                 <li class="mb-2">
@@ -157,7 +171,15 @@ function displayReport(data) {
                                     <span class="ms-2 fw-bold">${gaps.length}</span>
                                 </li>
                                 <li class="mb-2">
-                                    <span class="badge" style="background-color: #dc3545;">Gaps/Issues Found</span>
+                                    <span class="badge" style="background-color: #27ae60; color: white;">Compliant (Full Match)</span>
+                                    <span class="ms-2 fw-bold">${compliantCount}</span>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge" style="background-color: #f39c12; color: white;">Partial Match</span>
+                                    <span class="ms-2 fw-bold">${partialCount}</span>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge" style="background-color: #dc3545;">Critical Gaps</span>
                                     <span class="ms-2 fw-bold">${gapCount}</span>
                                 </li>
                                 <li class="mb-2">
@@ -168,7 +190,7 @@ function displayReport(data) {
                         </div>
                     </div>
                     
-                    <h6 class="text-uppercase text-muted mb-3">Control Compliance Analysis</h6>
+                    <h6 class="text-uppercase text-muted mb-3">Detailed Control Analysis</h6>
                     ${renderGapsTable(gaps)}
                     
                     <div class="mt-4">
@@ -189,24 +211,12 @@ function displayReport(data) {
 
 function renderGapsTable(gaps) {
     if (!gaps || gaps.length === 0) {
-        return '<div class="alert" style="background-color: #bdc3c7; color: #2c3e50; border-radius: 5px;"><i class="bi bi-check-circle"></i> No gaps detected!</div>';
-    }
-    
-    // Filter only GAP and PARTIAL_MATCH entries
-    const relevantGaps = gaps.filter(gap => {
-        if (typeof gap === 'object' && gap !== null) {
-            return gap.status === 'GAP' || gap.status === 'PARTIAL_MATCH';
-        }
-        return true;
-    });
-    
-    if (relevantGaps.length === 0) {
-        return '<div class="alert" style="background-color: #bdc3c7; color: #2c3e50; border-radius: 5px;"><i class="bi bi-check-circle"></i> All controls are compliant!</div>';
+        return '<div class="alert" style="background-color: #bdc3c7; color: #2c3e50; border-radius: 5px;"><i class="bi bi-check-circle"></i> No controls evaluated!</div>';
     }
     
     let html = '<div class="table-container"><table class="table table-striped"><thead><tr><th>#</th><th>Question ID</th><th>Status</th><th>Issue</th></tr></thead><tbody>';
     
-    relevantGaps.forEach((gap, index) => {
+    gaps.forEach((gap, index) => {
         let qId = '';
         let status = '';
         let reason = '';
@@ -214,20 +224,33 @@ function renderGapsTable(gaps) {
         if (typeof gap === 'object' && gap !== null) {
             qId = gap.question_id || '';
             status = gap.status || 'UNKNOWN';
-            reason = gap.reason || 'No details';
+            reason = gap.reason || 'Compliant';
         } else if (typeof gap === 'string') {
             reason = gap;
         } else {
             reason = String(gap);
         }
         
-        const statusBadgeClass = status === 'GAP' ? 'bg-danger' : 'bg-warning';
+        // Determine status badge color
+        let statusBadgeClass = 'bg-secondary';
+        let statusBgColor = '#95a5a6';
+        
+        if (status === 'FULL_MATCH') {
+            statusBadgeClass = 'badge-success';
+            statusBgColor = '#27ae60';
+        } else if (status === 'PARTIAL_MATCH') {
+            statusBadgeClass = 'bg-warning';
+            statusBgColor = '#f39c12';
+        } else if (status === 'GAP') {
+            statusBadgeClass = 'bg-danger';
+            statusBgColor = '#dc3545';
+        }
         
         html += `
             <tr>
                 <td><span class="badge" style="background-color: #95a5a6;">${index + 1}</span></td>
                 <td>${escapeHtml(qId)}</td>
-                <td><span class="badge ${statusBadgeClass}">${escapeHtml(status)}</span></td>
+                <td><span class="badge" style="background-color: ${statusBgColor}; color: white;">${escapeHtml(status)}</span></td>
                 <td>${escapeHtml(reason)}</td>
             </tr>
         `;
