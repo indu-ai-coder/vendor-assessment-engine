@@ -1,16 +1,28 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_from_directory
+import os
 
 from app.services.parser.questionnaire_parser import parse_questionnaire
 from app.services.parser.policy_parser import parse_policy
 from app.services.verifier.gap_detector import detect_gaps
 from app.services.scorer.risk_scorer import calculate_risk_score
 
-app = Flask(__name__)
+# Get the base directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+app = Flask(__name__, 
+            static_folder=os.path.join(BASE_DIR, 'static'),
+            static_url_path='/static',
+            template_folder=os.path.join(BASE_DIR, 'static'))
 
 
 @app.route("/", methods=["GET"])
 def home():
     print("✅ HOME ROUTE HIT")
+    return send_from_directory(app.static_folder, 'index.html')
+
+
+@app.route("/api/home", methods=["GET"])
+def api_home():
     return {
         "message": "Vendor Assessment Engine is running",
         "endpoint": "/assess (POST)"

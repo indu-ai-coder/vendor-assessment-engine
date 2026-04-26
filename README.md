@@ -11,6 +11,8 @@ A Flask-based API for automated vendor risk assessment. The engine analyzes vend
 - **Dual API Modes**:
   - `/assess-local` - Test with local files (development)
   - `/assess` - Upload files via POST request (production)
+- **Web Dashboard**: Interactive UI for uploading files and viewing assessment reports in table format
+- **Real-time Reporting**: Display risk scores and detected gaps with visualizations
 
 ## Project Structure
 
@@ -27,6 +29,10 @@ vendor-assessment-engine/
 │       │   └── risk_scorer.py         # Risk calculation logic
 │       └── verifier/
 │           └── gap_detector.py        # Gap detection engine
+├── static/
+│   ├── index.html                 # Web dashboard UI
+│   ├── styles.css                 # Dashboard styling
+│   └── script.js                  # Frontend logic
 ├── data/
 │   └── vendor_questionnaire.csv   # Sample vendor responses
 ├── requirements.txt               # Python dependencies
@@ -141,6 +147,38 @@ files = {
 response = requests.post('http://localhost:8000/assess', files=files)
 print(response.json())
 ```
+
+## Web Dashboard
+
+The application includes an interactive web-based dashboard for easy assessment management.
+
+### Accessing the Dashboard
+Open your browser and navigate to: `http://localhost:8000`
+
+### Dashboard Features
+
+1. **Upload Section**
+   - Drag-and-drop file upload interface
+   - Support for CSV questionnaires and PDF policies
+   - Clear validation and error messages
+
+2. **Report Display**
+   - Risk score visualization
+   - Risk level indicator (Low/Medium/High)
+   - Detailed gap analysis in table format
+   - Gap count summary
+
+3. **Local Test Mode**
+   - Quick testing with pre-configured local files
+   - Useful for development and debugging
+
+### UI Components
+
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Real-time Processing**: Instant feedback during assessment
+- **Data Visualization**: Risk scores and metrics clearly displayed
+- **Export Functionality**: Download assessment reports as JSON
+- **Sidebar Navigation**: Easy access to all features
 
 ## Configuration
 
