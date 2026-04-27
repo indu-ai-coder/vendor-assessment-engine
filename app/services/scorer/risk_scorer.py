@@ -13,3 +13,15 @@ def calculate_risk_score(gaps):
             score -= 5
 
     return max(score, 0)
+
+def get_risk_level(score):
+    if score >= 85:
+        return "LOW"
+    elif score >= 70:
+        return "MEDIUM-LOW"
+    elif score >= 50:
+        return "MEDIUM"
+    elif score >= 30:
+        return "MEDIUM-HIGH"
+    else:
+        return "HIGH"

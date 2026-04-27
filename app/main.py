@@ -4,7 +4,7 @@ import os
 from app.services.parser.questionnaire_parser import parse_questionnaire
 from app.services.parser.policy_parser import parse_policy
 from app.services.verifier.gap_detector import detect_gaps
-from app.services.scorer.risk_scorer import calculate_risk_score
+from app.services.scorer.risk_scorer import calculate_risk_score, get_risk_level
 
 # Get the base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,9 +53,13 @@ def assess_local():
     print("📊 Calculating risk score...")
     score = calculate_risk_score(gaps)
 
+    print("📊 Calculating risk Level...")
+    risk_level = get_risk_level(score)
+
     return jsonify({
         "mode": "local",
         "risk_score": score,
+        "risk_level": risk_level,
         "gaps": gaps
     }
 )
